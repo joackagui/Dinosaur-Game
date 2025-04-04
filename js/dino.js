@@ -56,10 +56,11 @@ resetButton.src = 'images/reset.png';
 
 let gameStarted = false;
 
-window.onload = function() {
+window.onload = function () {
     board = document.getElementById('board');
     board.width = boardWidth;
     board.height = boardHeight;
+
     context = board.getContext('2d');
 
     dinoImg = new Image();
@@ -77,6 +78,10 @@ window.onload = function() {
     cactus1Img.src = 'images/cactus1.png';
     cactus2Img = new Image();
     cactus2Img.src = 'images/cactus2.png';
+
+    cactus2Img = new Image();
+    cactus2Img.src = 'images/cactus2.png';
+
     cactus3Img = new Image();
     cactus3Img.src = 'images/cactus3.png';
 
@@ -118,18 +123,44 @@ function moveDino(event) {
         velocityY = -10 * (boardWidth / baseWidth);
         dino.isJumping = true;
     } else if (event.code === 'ArrowDown') {
+    board.addEventListener('click', function () {
+        if (!gameStarted) {
+            gameStarted = true;
+            requestAnimationFrame(update);
+            setInterval(placeCactus, 1000);
+        }
+    });
+
+    document.addEventListener('keydown', moveDino);
+    document.addEventListener('keyup', stopDino);
+};
+}
+
+function moveDino(event) {
+    if (gameOver) {
+        return;
+    }
+
+    if ((event.code == 'Space' || event.code == 'ArrowUp') && dino.y == dinoY) {
+        velocityY = -10;
+        dino.isJumping = true;
+    } else if (event.code == 'ArrowDown') {
         dino.isDucking = true;
     }
 }
 
 function stopDino(event) {
     if (event.code === 'ArrowDown') {
+    if (event.code == 'ArrowDown') {
         dino.isDucking = false;
     }
 }
+}
 
 function placeCactus() {
-    if (gameOver) return;
+    if (gameOver) {
+        return;
+    }
 
     let cactus = {
         img: null,
@@ -242,14 +273,14 @@ function update() {
         dino.img = jumpImage;
     } else if (dino.isDucking) {
         dino.img = duckingImages[Math.floor(currentFrame / 10) % 2];
-        dino.height = dinoHeight * 0.7;
-        dino.width = dinoWidth * 1.2;
-        dino.y = dinoY - (dinoHeight * 0.3);
+        dino.height = dinoHeight*0.7;
+        dino.width = dinoWidth*1.2
+        dino.y = dino.y*1.125;
     } else {
         dino.img = runningImages[Math.floor(currentFrame / 10) % 2];
         dino.height = dinoHeight;
         dino.width = dinoWidth;
-        dino.y = dinoY;
+        //dino.y = dinoY;
     }
 
     context.drawImage(dino.img, dino.x, dino.y, dino.width, dino.height);
@@ -309,15 +340,6 @@ function startGame() {
     velocityX = -8 * (boardWidth / baseWidth);
     velocityY = 0;
     gravity = 0.4 * (boardWidth / baseWidth);
-    
-    cactusArray = [];
-    score = 0;
-    currentFrame = 0;
-    gameOver = false;
-    gameStarted = true;
-
-    animationId = requestAnimationFrame(update);
-    cactusInterval = setInterval(placeCactus, 1000);
 }
 
 window.addEventListener('resize', function() {
@@ -343,3 +365,13 @@ window.addEventListener('resize', function() {
         gravity = 0.4 * (boardWidth / baseWidth);
     }
 });
+
+
+document.addEventListener('click', function (event) {
+    if (gameOver &&
+        event.offsetX >= boardWidth / 2 - 25 && event.offsetX <= boardWidth / 2 + 25 &&
+        event.offsetY >= boardHeight / 2 - 25 && event.offsetY <= boardHeight / 2 + 25) {
+        startGame();
+    }
+});
+
